@@ -16,6 +16,7 @@
     "serve-favicon": "~2.2.1",
     "mysql": "~2.7.0",
     "define-constant": "~1.0.0",
-    "bcrypt":"~0.8.3"
+    "bcrypt":"~0.8.3",
+    "sprintf-js": "~0.1.5"
   }
 }
