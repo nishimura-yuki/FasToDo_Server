@@ -1,4 +1,15 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <meta charset="UTF-8">
+    <title><%= pageTitle %></title>
+</head>
 
+<body>
+    <script type="text/javascript">
+        var AppEnv = <%- JSON.stringify(app_env) %>
+    </script>
+    <div id="wrapper"></div>
+    <script src="javascripts/app.js"></script>
+</body>
 </html>
