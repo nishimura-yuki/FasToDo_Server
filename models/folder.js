@@ -67,7 +67,7 @@ Folder.get = function(userid, folderid, fn){
                             }
                             console.log(result);
                             if(result.length > 0){
-                                folder = new Folder( result[0] ); 
+                                folder = new Folder( result[0] );
                             }
                             resolve(con); 
                         }
