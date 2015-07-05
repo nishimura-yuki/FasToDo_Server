@@ -5,17 +5,22 @@ var auth = require('./../component/authenticator');
 var InvalidException = require(define.path.lib + '/exceptions').InvalidException;
 
 module.exports.get = function(req, res, next){
-    res.render("login");
+    res.render("signup");
 };
 
 module.exports.post = function(req, res, next){
     console.log(req.body);
-    User.get( req.body.userid, req.body.password, function(err, user){
+    var u = new User({
+        userid: req.body.userid,
+        pass: req.body.password,
+        timezone: req.body.timezone, 
+        language: req.body.language
+    });
+    u.register( function(err){
+        console.log(err);
         if(err) return next(err);
-        if(!user){
-            return next(new InvalidException( InvalidException.cause.INVALID_LOGIN_INFO )); 
-        }
-        auth.refresh( res, user, function(err){
+        //クッキーにログイン情報を付与
+        auth.refresh( res, u, function(err){
             if(err) return next(err); 
              res.format({
                 html: function(){
@@ -27,5 +32,6 @@ module.exports.post = function(req, res, next){
             });                
         });
     });
+};
 
-}
+

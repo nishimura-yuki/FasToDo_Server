@@ -1,47 +1,27 @@
-var express = require('express');
-var bodyParser = require('body-parser');
-var router = express.Router();
+var app = require('express');
+var router = app.Router();
 
 // routes
 var api = require('./api');
-var apiTask   = require('./api/task');
-var apiFolder = require('./api/folder');
+var web = require('./web');
 
-var webApp = require('./web/app');
-var webRegister = require('./web/register');
-
-// routing table
-var routes = [
-    {method: 'use' , path: '/api/*' , func: bodyParser.json() },
-    {method: 'use' , path: '/api/*' , func: api.base },
-
-    {method: 'get'   , path: '/api/task' , func: apiTask.get } ,
-    {method: 'post'  , path: '/api/task' , func: apiTask.post} ,
-    {method: 'put'   , path: '/api/task/:id' , func: apiTask.put},
-    {method: 'put'   , path: '/api/task/done/:id' , func: apiTask.done},
-    {method: 'put'   , path: '/api/task/active/:id' , func: apiTask.active},
-    {method: 'delete', path: '/api/task/:id' , func: apiTask.del},
-    
-    {method: 'get'   , path: '/api/folder' , func: apiFolder.get } ,
-    {method: 'post'  , path: '/api/folder' , func: apiFolder.post} ,
-    {method: 'put'   , path: '/api/folder/:id' , func: apiFolder.put},
-    {method: 'delete', path: '/api/folder/:id' , func: apiFolder.del},
-
-    {method: 'get'  , path: '/app' , func: webApp.main } ,
-    {method: 'get'  , path: '/user/register' , func: webRegister.get } ,
-    {method: 'post'  , path: '/user/register' , func: webRegister.post }
-];
-
-for (var i=0; i<routes.length; i++ ) {
-    console.log("route setting: " + routes[i].method + ' ' + routes[i].path );
-    router[routes[i].method]( routes[i].path , routes[i].func );       
-}
+router.use( '/api', api );
+router.use( '/web', web );
 
 //404 not found
 router.use( function(req, res){
     res.status(404).format({
         json: function(){
             res.send({ message: 'Resource not found' });
+        },
+        plain: function(){
+            res.render('Resource not found');
+        },
+        html: function(){
+            res.render('404_notfound');
+        },
+        default: function() {
+            res.status(406).send('Not Acceptable');
         }
     });
 });
@@ -50,20 +30,39 @@ router.use( function(req, res){
 router.use( function(err, req, res, next){
     console.log(err.stack);
     var msg;
+    var cause;
     switch(err.type){
         case 'badrequest':
             msg = 'Bad Request';
             res.statusCode = 400;
             break;
+        case 'invaliddata':
+            cause = err.cause;
+            mag = "Invalid Data";
+            res.statusCode = 400;
+            break;
         default:
             msg = 'Internal Server Error';
             res.statusCode = 500;
+            break;
     }
 
     res.format({
         json: function(){
-            res.send({error: msg});
-        }
+            res.send({error: msg, cause: cause});
+        },
+        plain: function(){
+            res.send( msg ); 
+        },
+        html: function(){
+            res.render('error', {
+                message: null,
+                error: null
+            });
+        }, 
+        default: function() {
+            res.status(406).send('Not Acceptable');
+        }       
     });
 
 });

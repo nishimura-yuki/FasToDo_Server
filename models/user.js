@@ -1,6 +1,7 @@
 var define = require('define-constant')(global.DEFINE)();
 var bcrypt = require('bcrypt');
 var mysql = require(define.path.lib + '/mysql');
+var InvalidException = require(define.path.lib + '/exceptions').InvalidException;
 
 module.exports = User;
 
@@ -10,30 +11,41 @@ function User(obj){
     }
 }
 
-User.timezones = {
-    "Japan": "Asia/Tokyo",
-    "Australia/Sydney":"Australia/ACT"
-};
-
-
 User.get = function( userid, password, fn ){
     
     var callback1 = function( err, res ){
         if(err) return fn(err);
-        
-        //この時点でユーザが存在しなければ終了
-        
+        //User not found
+        if(!res) return fn(null, null);
+
         bcrypt.hash( password, res.salt, function(err, hash){
             if(err) return fn(err);
             if(hash == res.password){
                 return fn(null, res); 
             }
-            //パスワード間違い
-            fn();
+            //Password wrong
+            fn( null, null);
         }); 
     };
     
-    getUserById( this.userid, callback1 );
+    getUserById( userid, callback1 );
+
+}
+
+User.getWithAuth = function(id, key, hash, fn){
+    
+    var callback = function(err, res){
+        if(err) return fn(err);
+        if(!res) return fn(null, null);
+        bcrypt.hash( key, res.salt, function(err, _hash){
+            if(err) return fn(err);
+            if(_hash == hash){
+                return fn(null, res); 
+            }
+            fn( null, null);
+        }); 
+    }
+    getUserByTableid( id, callback );
 
 }
 
@@ -44,8 +56,9 @@ User.prototype.register = function( fn ){
     var callback1 = function( err, res ){
         if(err) return fn(err);
         
-        //ユーザが既に存在している場合はその旨を通知
-        
+        //Userid already registered
+        if(res) return fn( new InvalidException( InvalidException.cause.ALREADY_EXIST_USER ));
+
         hashPassword( _this.pass, callback2 );
     };
 
@@ -58,9 +71,9 @@ User.prototype.register = function( fn ){
                     return new Promise(function(resolve, reject){
                         console.log("insert new data "+ _this.password);
                         con.query(
-                            "INSERT INTO user(userid, salt, password, timezone, created_at) " +
-                            "VALUE(?, ?, ?, ?, now())" ,
-                            [ _this.userid, _this.salt, _this.password, _this.timezone ],
+                            "INSERT INTO user(userid, salt, password, timezone, language, created_at) " +
+                            "VALUE(?, ?, ?, ?, ?, now())" ,
+                            [ _this.userid, _this.salt, _this.password, _this.timezone, _this.language ],
                             function( err, result ){
                                 if(err){
                                     reject(err); 
@@ -93,21 +106,21 @@ User.prototype.update = function( fn ){
 //======= private
 
 function getUserById( userid, fn ){
-    var res = {};
+    var res = null;
     mysql.query( [
             function(con){
                 return new Promise(function(resolve, reject){
                     con.query(
-                            "SELECT id,userid,salt,password,timezone" +
-                            " FROM user WHERE " +
+                            "SELECT id,userid,salt,password,timezone,language " +
+                            "FROM user WHERE " +
                             "userid=? ",
                             [userid],
                             function(err, result){
-                                if(err){
-                                    reject(err);
-                                    return;
-                                }
+                                if(err) return reject(err);
                                 console.log(result);
+                                if(result.length > 0){
+                                    res = new User(result[0]);
+                                }
                                 resolve(con);
                             }
                     );
@@ -116,7 +129,36 @@ function getUserById( userid, fn ){
         ],
         function(err){
             if(err) return fn(err);
-            fn(null, new User(res) );
+            fn(null, res);
+        }
+   );
+}
+
+function getUserByTableid( id, fn ){
+    var res = null;
+    mysql.query( [
+            function(con){
+                return new Promise(function(resolve, reject){
+                    con.query(
+                            "SELECT id,userid,salt,password,timezone,language " +
+                            "FROM user WHERE " +
+                            "id=? ",
+                            [id],
+                            function(err, result){
+                                if(err) return reject(err);
+                                console.log(result);
+                                if(result.length > 0){
+                                    res = new User(result[0]);
+                                }
+                                resolve(con);
+                            }
+                    );
+                });
+            } 
+        ],
+        function(err){
+            if(err) return fn(err);
+            fn(null, res);
         }
    );
 }

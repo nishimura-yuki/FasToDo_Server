@@ -1,13 +1,16 @@
+var define = require('define-constant')(global.DEFINE)();
+var timezone = require(define.path.lib + '/timezone');
 
 module.exports.main = function(req, res, next){
+    console.log(res.locals);
+    var user = res.locals.user;
     res.render('app', 
                {
-                "pageTitle": "FasToDo", 
                 "app_env":{
                     "timezone": { 
-                        "name": "Australia/Sydney",
-                        "offset": 600 
-                    }
+                        "offset": timezone.getTimezoneOffset(user.timezone) 
+                    },
+                    "language": user.language
                 }
             }
     );

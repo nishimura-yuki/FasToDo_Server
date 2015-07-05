@@ -5,6 +5,7 @@ var FolderOrder = require(models + '/folder_order');
 
 module.exports.get = function(req, res, next){
   
+    var user = res.locals.user;
     /* response json format
      * [
      *   { folderid: "folderid", name:"name", orderid: "orderid",
@@ -17,7 +18,7 @@ module.exports.get = function(req, res, next){
      * ]
      *
      */
-    Folder.getList( 1 ,
+    Folder.getList( user.id ,
         function(err, resultFolder){
             if(err) return next(err);
             var ids = [];
@@ -29,7 +30,7 @@ module.exports.get = function(req, res, next){
                 ids.push( folderid );
             }
             if(ids.length > 0){
-                FolderOrder.getList( 1, ids, function(err, resultOrder){
+                FolderOrder.getList( user.id , ids, function(err, resultOrder){
                     if(err) return next(err);
 
                     for( var i=0;i<resultOrder.length; i++ ){
@@ -53,8 +54,9 @@ module.exports.get = function(req, res, next){
 };
 
 module.exports.post = function(req, res, next){
+    var user = res.locals.user;
     var folder = new Folder( {
-        userid: 1 ,
+        userid: user.id ,
         name: req.body.name
     });
     folder.insert(function(err, resultid){

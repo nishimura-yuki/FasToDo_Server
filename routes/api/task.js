@@ -8,8 +8,9 @@ var condition_pattern = new RegExp("^.+\..+$");
 
 module.exports.get = function(req, res, next){
 
+    var user = res.locals.user;
     var conditions = [
-        { field:"userid", operator:"equal", value:1 } ,
+        { field:"userid", operator:"equal", value:user.id } ,
         { field:"status", operator:"notequal", value:Task.status.delete }
     ];
     
@@ -45,7 +46,8 @@ module.exports.get = function(req, res, next){
 
 module.exports.post = function(req, res, next){
     console.log(req.body);
-    var userid = 1;
+    var user = res.locals.user;
+    var userid = user.id;
     var task = new Task( {
         userid: userid ,
         title: req.body.title,
@@ -80,7 +82,8 @@ module.exports.post = function(req, res, next){
 
 module.exports.done = function(req, res, next){
     console.log(req.body);
-    var userid = 1;
+    var user = res.locals.user;
+    var userid = user.id;
     var task = new Task( {
         userid: userid ,
         title: req.body.title,
@@ -114,7 +117,8 @@ module.exports.done = function(req, res, next){
 
 module.exports.active = function(req, res, next){
     console.log(req.body);
-    var userid = 1;
+    var user = res.locals.user;
+    var userid = user.id;
     var task = new Task( {
         userid: userid ,
         title: req.body.title,
@@ -147,7 +151,8 @@ module.exports.put = function(req, res, next){
     console.log(req.body);
     console.log(req.params);
 
-    var userid = 1;
+    var user = res.locals.user;
+    var userid = user.id;
     var taskValue = req.body.task;
     var folderValue = req.body.folder;
     var values = [];
@@ -224,7 +229,8 @@ module.exports.put = function(req, res, next){
 
 module.exports.del = function(req, res, next){
     console.log( req.params.id );
-    Task.getById( 1, req.params.id, function(err, result){
+    var user = res.locals.user;
+    Task.getById( user.id, req.params.id, function(err, result){
         if(err) return next(err);
         console.log(result);
         if(result.length <= 0){
@@ -241,7 +247,8 @@ module.exports.del = function(req, res, next){
 
 module.exports.done = function(req, res, next){
     console.log( req.params.id );
-    Task.getById( 1, req.params.id, function(err, result){
+    var user = res.locals.user;
+    Task.getById( user.id, req.params.id, function(err, result){
         if(err) return next(err);
         console.log(result);
         if(result.length <= 0){
@@ -258,7 +265,8 @@ module.exports.done = function(req, res, next){
 
 module.exports.active = function(req, res, next){
     console.log( req.params.id );
-    Task.getById( 1, req.params.id, function(err, result){
+    var user = res.locals.user;
+    Task.getById( user.id, req.params.id, function(err, result){
         if(err) return next(err);
         console.log(result);
         if(result.length <= 0){
