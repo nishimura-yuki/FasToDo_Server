@@ -7,10 +7,14 @@ module.exports.main = function(req, res, next){
     res.render('app', 
                {
                 "app_env":{
-                    "timezone": { 
-                        "offset": timezone.getTimezoneOffset(user.timezone) 
-                    },
-                    "language": user.language
+                    "user":{
+                        "userid": user.userid,
+                        "timezone":{
+                            "offset" :timezone.getTimezoneOffset(user.timezone),
+                            "name"   :user.timezone
+                        },
+                        "language": user.language
+                    }
                 }
             }
     );
