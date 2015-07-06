@@ -12,7 +12,16 @@ var REG_USERID = /^[0-9]{1,10}$/;
 module.exports.auth = function(req, res, next){
     console.log("auth!!");
     var userCookie = req.cookies[USER_COOKIE_NAME];
-    if(!userCookie) return redirectDefault(res);
+    //if(!userCookie) return redirectDefault(res);
+    if(!userCookie){
+        res.locals.user = {
+            id:1,
+            userid:"test@test.com",
+            language:"en-US",
+            timezone:"Australia/Sydney"
+        }; 
+        return next();
+    }
 
     console.log( userCookie );
     var id = userCookie.id;

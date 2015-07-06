@@ -21,6 +21,7 @@
     "mysql": "~2.7.0",
     "define-constant": "~1.0.0",
     "bcrypt":"~0.8.3",
-    "sprintf-js": "~1.0.2"
+    "sprintf-js": "~1.0.2",
+    "mailgun-js":"~0.7.0"
   }
 }

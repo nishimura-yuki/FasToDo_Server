@@ -4,6 +4,8 @@ var User = require(models + '/user');
 var auth = require('./../component/authenticator');
 var InvalidException = require(define.path.lib + '/exceptions').InvalidException;
 
+var mail = require('./../component/mail');
+
 module.exports.get = function(req, res, next){
     res.render("signup");
 };
@@ -19,18 +21,23 @@ module.exports.post = function(req, res, next){
     u.register( function(err){
         console.log(err);
         if(err) return next(err);
-        //クッキーにログイン情報を付与
-        auth.refresh( res, u, function(err){
-            if(err) return next(err); 
-             res.format({
-                html: function(){
-                    res.redirect('/web/app');
-                },
-                json: function(){
-                    res.json( {redirect: '/web/app'} );
-                }
-            });                
+        
+        mail.send( u.userid, function(err){
+            if(err) return next(err);
+            //クッキーにログイン情報を付与
+            auth.refresh( res, u, function(err){
+                if(err) return next(err); 
+                 res.format({
+                    html: function(){
+                        res.redirect('/web/app');
+                    },
+                    json: function(){
+                        res.json( {redirect: '/web/app'} );
+                    }
+                });                
+            });       
         });
+
     });
 };
 
