@@ -16,7 +16,7 @@ module.exports.auth = function(req, res, next){
     if(!userCookie){
         res.locals.user = {
             id:1,
-            userid:"test@test.com",
+            userid:"guest@fastodo.com",
             language:"en-US",
             timezone:"Australia/Sydney"
         }; 
@@ -89,6 +89,10 @@ module.exports.refresh = function( res, user, fn ){
             fn(null);
     }); 
 };
+
+module.exports.logout = function( res ){
+    res.clearCookie( USER_COOKIE_NAME );
+}
 
 //== private
 

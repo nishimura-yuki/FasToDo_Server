@@ -10,7 +10,7 @@ function Folder(obj){
     }
 }
 
-Folder.max = 50;
+Folder.max = 10;
 
 /*
 Folder.get = function( userid, fn ){
@@ -21,7 +21,7 @@ Folder.get = function( userid, fn ){
             function(con){
                 return new Promise(function(resolve, reject){
                     con.query(
-                        "SELECT folder.folderid, folder.name , folder.orderid , " +
+                        "SELECT folder.userid, folder.folderid, folder.name , folder.orderid , " +
                         "       order_folder.taskid, order_folder.orderid " +
                         "FROM order_folder LEFT JOIN folder " + 
                         "ON order_folder.folderid = folder.folderid " +
@@ -57,7 +57,7 @@ Folder.get = function(userid, folderid, fn){
             function(con){
                 return new Promise(function(resolve, reject){
                     con.query(
-                        "SELECT folderid, name, orderid FROM folder " +
+                        "SELECT userid, folderid, name, orderid FROM folder " +
                         " WHERE userid = ? and folderid = ?",
                         [ userid, folderid ] ,
                         function(err, result){
@@ -90,7 +90,7 @@ Folder.getList = function( userid, fn ){
             function(con){
                 return new Promise(function(resolve, reject){
                     con.query(
-                        "SELECT folderid, name, orderid FROM folder " +
+                        "SELECT userid, folderid, name, orderid FROM folder " +
                         " WHERE userid = ? order by orderid",
                         [ userid ] ,
                         function(err, result){
@@ -223,9 +223,60 @@ Folder.prototype.insert = function( fn ){
 
 Folder.prototype.update = function( fn ){
 
+    var _this = this;
+    mysql.query(
+        [
+            function(con){
+                return new Promise(function(resolve, reject){
+                    con.query(
+                        "UPDATE folder SET "+
+                        "name=? " +
+                        " WHERE userid = ? and folderid = ?",
+                        [ _this.name, _this.userid, _this.folderid ] ,
+                        function(err, result){
+                            if(err) return reject(err);
+                            console.log(result);
+                            resolve(con); 
+                        }
+                    );
+                });
+            }
+        ],
+        function(err){
+            if(err) return fn(err);
+            fn(null);
+        }
+    );
 
 }
 
+Folder.prototype.del = function( fn ){
+
+    var _this = this;
+    mysql.queryWithTransaction(
+        [
+            function(con){
+                return new Promise(function(resolve, reject){
+                    con.query(
+                        "DELETE FROM folder "+
+                        " WHERE userid = ? and folderid = ?",
+                        [ _this.userid, _this.folderid ] ,
+                        function(err, result){
+                            if(err) return reject(err);
+                            console.log(result);
+                            resolve(con); 
+                        }
+                    );
+                });
+            }
+        ],
+        function(err){
+            if(err) return fn(err);
+            fn(null);
+        }
+    );
+
+}
 //======= private
 
 function createFolderId(userid, tableid){

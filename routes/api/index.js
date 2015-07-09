@@ -18,6 +18,7 @@ var base = function(req, res, next){
 // routes
 var task   = require('./task');
 var folder = require('./folder');
+var user   = require('./user');
 
 // routing table
 var routes = [
@@ -36,7 +37,9 @@ var routes = [
     {method: 'get'   , path: '/folder' , func: folder.get } ,
     {method: 'post'  , path: '/folder' , func: folder.post} ,
     {method: 'put'   , path: '/folder/:id' , func: folder.put},
-    {method: 'delete', path: '/folder/:id' , func: folder.del}
+    {method: 'delete', path: '/folder/:id' , func: folder.del},
+
+    {method: 'put'   , path: '/user/settings', func: user.put }
 
 ];
 

@@ -99,7 +99,35 @@ User.prototype.register = function( fn ){
 
 }
 
-User.prototype.update = function( fn ){
+User.prototype.updateSettings = function( fn ){
+    var res = null;
+    var _this = this;
+    mysql.query( [
+            function(con){
+                return new Promise(function(resolve, reject){
+                    con.query(
+                            "UPDATE user SET " +
+                            "timezone=?, language=? " +
+                            "WHERE id=? " ,
+                            [_this.timezone, _this.language, _this.id],
+                            function(err, result){
+                                if(err) return reject(err);
+                                console.log(result);
+                                if(result.affectedRows <= 0){
+                                
+                                }
+                                resolve(con);
+                            }
+                    );
+                });
+            } 
+        ],
+        function(err){
+            if(err) return fn(err);
+            fn(null);
+        }
+   );
+
 
 }
 

@@ -70,46 +70,37 @@ module.exports.put = function(req, res, next){
     console.log(req.body);
     console.log(req.params);
 
-    var values = [];
-    for(key in req.body){
-        if( Todo.allowedUpdateField(key) ){
-            console.log( key );
-            values.push( { field:key , value:req.body[key] } );
-        }
-    }
-
-    Todo.getById( req.params.id , function(err, result){
+    var user = res.locals.user;
+    var body = req.body;
+    Folder.get( user.id , req.params.id , function(err, result){
         if(err) return next(err);
-        if(result.length <=0){
+        if(!result){
             //404 not found
             return next();
         }
-        var fields = [];
-        for( var i=0; i<values.length; i++ ){
-            result[0][values[i].field] = values[i].value;
-            fields.push( values[i].field );
-        }
-        result[0].update( fields , function(err, result){
+        result.name = body.name;
+        result.update( function(err){
             if(err) return next(err);
-            res.json(result);
+            res.json( convertToJson( result ) );
         });
     });
 
 };
 
 module.exports.del = function(req, res, next){
-    
-    Todo.getById( req.params.id, function(err, result){
+    console.log( req.params.id );
+    var user = res.locals.user;
+    Folder.get( user.id, req.params.id, function(err, result){
         if(err) return next(err);
-        if(result.length <= 0){
+        if(!result){
             //404 not found
             return next();
         }
-        result[0].updateStatus('delete', function(err, result){
+        result.del(function(err){
             if(err) return next(err);
             res.json({status: "ok"});
         });
-    })
+    });
 };
 
 //== private

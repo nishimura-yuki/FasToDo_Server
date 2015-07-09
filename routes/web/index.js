@@ -7,6 +7,7 @@ var auth = require('./../component/authenticator');
 var app = require('./app');
 var signup = require('./signup');
 var login = require('./login');
+var logout = require('./logout');
 
 var routes = [
     
@@ -18,7 +19,9 @@ var routes = [
     {method: 'get'  , path: '/signup' , func: signup.get } ,
     {method: 'post' , path: '/signup' , func: signup.post } ,
     {method: 'get'  , path: '/login' , func: login.get } ,
-    {method: 'post' , path: '/login' , func: login.post }
+    {method: 'post' , path: '/login' , func: login.post },
+    {method: 'get'  , path: '/logout' , func: logout.get } 
+    
 ]; 
 
 for (var i=0; i<routes.length; i++ ) {
