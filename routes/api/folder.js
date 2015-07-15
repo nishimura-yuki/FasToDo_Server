@@ -103,6 +103,38 @@ module.exports.del = function(req, res, next){
     });
 };
 
+module.exports.order = function( req, res, next ){
+    console.log( req.params.id );
+    var user = res.locals.user;
+    var id = req.params.id;
+    var beforeid = req.body.before;
+
+    var updateFunc = function( folder, orderid ){
+        console.log(orderid);
+        folder.updateOrder( orderid, function(err){
+            if(err) return next(err);
+            res.json( {orderid: orderid} );
+        });
+    }
+
+    Folder.get( user.id, id, function(err, result){
+        if(err) return next(err);
+        if(!result) return next(); //404 not found
+        if( beforeid == "top" ){
+            return updateFunc( result, 0 );
+        }
+        var targetFolder = result;
+        Folder.get( user.id, beforeid, function(err, result){
+            if(err) return next(err);
+            if(!result){
+                //400 invalid data 
+                return next( new InvalidException( InvalidException.cause.INVALID_REQUEST_DATA ) ); 
+            }
+            updateFunc( targetFolder, result.orderid + 1 );
+        });
+    });
+};
+
 //== private
 
 function convertToJsonList( folderList ){

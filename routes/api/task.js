@@ -3,6 +3,7 @@ var models = define.path.models;
 var Task = require(models + '/task');
 var Folder = require(models + '/folder');
 var FolderOrder = require(models + '/folder_order');
+var InvalidException = require(define.path.lib + '/exceptions').InvalidException;
 
 var condition_pattern = new RegExp("^.+\..+$");
 
@@ -280,7 +281,85 @@ module.exports.active = function(req, res, next){
     });
 };
 
+module.exports.order = function(req, res, next){
+    console.log("task order");
+    console.log( req.body );
+    console.log( req.params );
+    if( req.body.type == "date" ){
+        orderForDate( req.params.id, req.body.before, res, next ); 
+    }else if( req.body.type == "folder" ){
+        orderForFolder( req.params.id, req.body.before, res, next ); 
+    }else{
+        next( new InvalidException( InvalidException.cause.INVALID_REQUEST_DATA ) ); 
+    }
+}
+
 //== private
+
+function orderForDate(id, beforeid, res, next){
+    var user = res.locals.user;
+
+    var updateFunc = function( task, orderid ){
+        console.log(task);
+        console.log(orderid);
+        task.updateOrder( orderid, function(err){
+            if(err) return next(err);
+            res.json( {orderid: orderid} );
+        });
+    }
+
+    Task.getById( user.id, id, function(err, result){
+        if(err) return next(err);
+        if(result.length <= 0){
+            //404 not found
+            return next();
+        }
+        if( beforeid == "top" ){
+            return updateFunc( result[0], 0 );
+        }
+        var targetTask = result[0];
+        Task.getById( user.id, beforeid, function(err, result){
+            if(err) return next(err);
+            if(result.length <= 0 ||
+               result[0].schedule.getTime() != targetTask.schedule.getTime() ){
+                //400 invalid data 
+                return next( new InvalidException( InvalidException.cause.INVALID_REQUEST_DATA ) ); 
+            }
+            updateFunc( targetTask, result[0].orderid + 1 );
+        });
+    });
+}
+
+function orderForFolder(id, beforeid, res, next){
+    var user = res.locals.user;
+
+    var updateFunc = function( order, orderid ){
+        order.updateOrder( orderid, function(err){
+            if(err) return next(err);
+            res.json( {orderid: orderid} );
+        });
+    }
+
+    FolderOrder.getByTaskid( user.id, id, function(err, result){
+        if(err) return next(err);
+        console.log(result);
+        if(!result) return next(); //404 not found
+        if( beforeid == "top" ){
+            updateFunc( result, 0 );
+            return;
+        }
+        var targetOrder = result;
+        FolderOrder.getByTaskid( user.id, beforeid, function(err, result){
+            if(err) return next(err);
+            if(!result ||
+               result.folderid != targetOrder.folderid ){
+                //400 invalid data 
+                return next( new InvalidException( InvalidException.cause.INVALID_REQUEST_DATA ) ); 
+            }
+            updateFunc( targetOrder, result.orderid + 1 );
+        });
+    });
+}
 
 function convertToJsonList( taskList ){
     var res = [];

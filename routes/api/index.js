@@ -32,11 +32,13 @@ var routes = [
     {method: 'put'   , path: '/task/:id' , func: task.put},
     {method: 'put'   , path: '/task/done/:id' , func: task.done},
     {method: 'put'   , path: '/task/active/:id' , func: task.active},
+    {method: 'put'   , path: '/task/order/:id' , func: task.order},
     {method: 'delete', path: '/task/:id' , func: task.del},
     
     {method: 'get'   , path: '/folder' , func: folder.get } ,
     {method: 'post'  , path: '/folder' , func: folder.post} ,
     {method: 'put'   , path: '/folder/:id' , func: folder.put},
+    {method: 'put'   , path: '/folder/order/:id' , func: folder.order},
     {method: 'delete', path: '/folder/:id' , func: folder.del},
 
     {method: 'put'   , path: '/user/settings', func: user.put }

@@ -217,7 +217,43 @@ FolderOrder.prototype.moveFolder = function( folderid, fn ){
 
 }
 
-FolderOrder.prototype.sortOrder = function( orderid, fn ){
+FolderOrder.prototype.updateOrder = function( orderid, fn ){
+
+    var _this = this;
+    mysql.queryWithTransaction( [
+        function(con){
+            return new Promise(function(resolve, reject){
+                con.query("UPDATE order_folder SET orderid = orderid+1 " +
+                          "WHERE userid = ? and folderid = ? and orderid >= ?" ,
+                          [_this.userid, _this.folderid , orderid],
+                          function(err, result){
+                            if(err) return reject(err);
+                            console.log(result);
+                            resolve(con);
+                          }
+                        );
+            });
+        },
+        function(con){
+            return new Promise(function(resolve, reject){
+                con.query("UPDATE order_folder SET orderid = ? " + 
+                          "WHERE userid=? and id=?",
+                          [orderid, _this.userid, _this.id] ,
+                          function(err, result){
+                            if(err) return reject(err);
+                            console.log(result);
+                            resolve(con);
+                          }  
+                        );
+            });
+        }
+       ],  
+       function(err){
+        if(err) return fn(err);
+        _this.orderid = orderid;
+        fn(null);
+       }
+   );
 
 
 }

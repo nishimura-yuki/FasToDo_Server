@@ -221,7 +221,6 @@ Task.prototype.update = function(fields, fn){
 
 Task.prototype.upadteStatusWithRemoveFromFolder = function( status, fn ){
 
-    console.log(this);
     var _this = this;
     mysql.queryWithTransaction( [
         function(con){
@@ -273,6 +272,46 @@ Task.prototype.active = function(fn){
     this.update(["status"], fn);
 };
 
+Task.prototype.updateOrder = function( orderid, fn ){
+
+    console.log(this);
+    console.log(orderid);
+    var _this = this;
+    mysql.queryWithTransaction( [
+        function(con){
+            return new Promise(function(resolve, reject){
+                con.query("UPDATE task SET orderid = orderid+1 " +
+                          "WHERE userid = ? and schedule = ? and orderid >= ?" ,
+                          [_this.userid, _this.schedule, orderid],
+                          function(err, result){
+                            if(err) return reject(err);
+                            console.log(result);
+                            resolve(con);
+                          }
+                        );
+            });
+        },
+        function(con){
+            return new Promise(function(resolve, reject){
+                con.query("UPDATE task SET orderid = ? " + 
+                          "WHERE userid=? and taskid=?",
+                          [orderid, _this.userid, _this.taskid] ,
+                          function(err, result){
+                            if(err) return reject(err);
+                            console.log(result);
+                            resolve(con);
+                          }  
+                        );
+            });
+        }
+       ],  
+       function(err){
+        if(err) return fn(err);
+        _this.orderid = orderid;
+        fn(null);
+       }
+   );
+};
 
 //== private
 

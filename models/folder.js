@@ -277,6 +277,48 @@ Folder.prototype.del = function( fn ){
     );
 
 }
+
+
+Folder.prototype.updateOrder = function( orderid, fn ){
+
+    console.log(this);
+    var _this = this;
+    mysql.queryWithTransaction( [
+        function(con){
+            return new Promise(function(resolve, reject){
+                con.query("UPDATE folder SET orderid = orderid+1 " +
+                          "WHERE userid = ? and orderid >= ?" ,
+                          [_this.userid, orderid],
+                          function(err, result){
+                            if(err) return reject(err);
+                            console.log(result);
+                            resolve(con);
+                          }
+                        );
+            });
+        },
+        function(con){
+            return new Promise(function(resolve, reject){
+                con.query("UPDATE folder SET orderid = ? " + 
+                          "WHERE userid=? and folderid=?",
+                          [orderid, _this.userid, _this.folderid] ,
+                          function(err, result){
+                            if(err) return reject(err);
+                            console.log(result);
+                            resolve(con);
+                          }  
+                        );
+            });
+        }
+       ],  
+       function(err){
+        if(err) return fn(err);
+        _this.orderid = orderid;
+        fn(null);
+       }
+   );
+}
+
 //======= private
 
 function createFolderId(userid, tableid){
