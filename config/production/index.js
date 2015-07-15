@@ -1,8 +1,18 @@
+
+//for ClearDB logic
+//this url will be 
+// mysql://"user":"password"@"host"/"database"?reconnect=true
+var db_url = process.env.CLEARDB_DATABASE_URL;
+var mysql={};
+var tmp=db_url.split("//")[1].split(":");
+mysql.user=tmp[0];
+tmp=tmp[1].split("@");
+mysql.password=tmp[0];
+tmp=tmp[1].split("/");
+mysql.host=tmp[0];
+tmp=tmp[1].split("?");
+mysql.database=tmp[0];
+
 module.exports = {
-    mysql_connection: {
-        host: 'us-cdbr-iron-east-02.cleardb.net',
-        user: 'b77c302d8a10e6',
-        password: '8ad2d3f4',
-        database: 'heroku_2c2c97ab72101ed'       
-    }
+    mysql_connection: mysql
 };
