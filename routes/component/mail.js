@@ -3,6 +3,7 @@ var domain = 'appd96b911512e44b33bf6d6c2df01c6cfe.mailgun.org';
 var mailgun = require('mailgun-js')({apiKey: api_key, domain: domain});
 
 module.exports.send = function( email, fn ){
+    /*
     console.log(email);
     var data = {
       from: 'FasToDo <info@fastodo.mailgun.org>',
@@ -15,4 +16,6 @@ module.exports.send = function( email, fn ){
         console.log(body);
         fn(null);
     });
+    */
+    fn(null);
 }
